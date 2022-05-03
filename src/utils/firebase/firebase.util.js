@@ -1,7 +1,14 @@
 // Import the functions you need from the SDKs you need
 import { initializeApp } from 'firebase/app';
-import { getAuth, GoogleAuthProvider, signInWithPopup } from 'firebase/auth';
-import {doc, getDoc, getFirestore, setDoc} from 'firebase/firestore'
+import {
+  getAuth,
+  GoogleAuthProvider,
+  signInWithPopup,
+  signInWithRedirect,
+  createUserWithEmailAndPassword,
+  signInWithEmailAndPassword
+} from 'firebase/auth';
+import { doc, getDoc, getFirestore, setDoc } from 'firebase/firestore';
 // TODO: Add SDKs for Firebase products that you want to use
 // https://firebase.google.com/docs/web/setup#available-libraries
 
@@ -25,29 +32,35 @@ provider.setCustomParameters({
 });
 
 export const auth = getAuth();
-export const signInWithGooglePopup = () =>
-  signInWithPopup(auth, provider);
+export const signInWithGooglePopup = () => signInWithPopup(auth, provider);
+export const signInWithGoogleRedirect = () =>signInWithRedirect(auth, provider);
 const db = getFirestore();
-  export const createUserDocument = async (userAuth) =>{
-    const userDocRef = doc(db,'users',userAuth.uid);
-    console.log(userDocRef);
-    const userSnapshot = await getDoc(userDocRef);
-    if(!(userSnapshot.exists())){
-      const {displayName, email} = userAuth;
-      const createDate = new Date();
-      try{
-      await setDoc(userDocRef,{
+export const createUserDocument = async (userAuth, additionInfo={}) => {
+  const userDocRef = doc(db, 'users', userAuth.uid);
+  console.log(userDocRef);
+  const userSnapshot = await getDoc(userDocRef);
+  if (!userSnapshot.exists()) {
+    const { displayName, email } = userAuth;
+    const createDate = new Date();
+    try {
+      await setDoc(userDocRef, {
         displayName,
         email,
-        createDate
-      })
-    
+        createDate,
+        ...additionInfo
+      });
+    } catch (err) {
+      console.log('error with user creation');
     }
-      catch(err){
-        console.log('error with user creation')
-      }
-
-    }
-    return userDocRef;
   }
+  return userDocRef;
+};
 
+export const createUserAuthwithEmailAndPassword = ( async(email, password)=>{
+   if(!email || !password) return;
+    return createUserWithEmailAndPassword(auth, email, password)
+})
+export const signInAuthwithEmailAndPassword = ( async(email, password)=>{
+  if(!email || !password) return;
+   return signInWithEmailAndPassword(auth, email, password)
+})
