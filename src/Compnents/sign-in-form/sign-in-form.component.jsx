@@ -1,5 +1,6 @@
 import { async } from '@firebase/util';
-import React, { useState } from 'react';
+import React, { useContext, useState } from 'react';
+import { UserContext } from '../../context/user.context';
 import {
   createUserAuthwithEmailAndPassword,
   createUserDocument,
@@ -17,6 +18,7 @@ const defaultFormFields = {
 const SignInForm = () => {
   const [formfields, setFormFileds] = useState(defaultFormFields);
   const { email, password } = formfields;
+  const {setCurrentuser} = useContext(UserContext);
 
   const handleChange = (event) => {
     const { name, value } = event.target;
@@ -34,6 +36,7 @@ const SignInForm = () => {
     console.log(formfields);
     try {
       const res = await signInAuthwithEmailAndPassword(email, password);
+      setCurrentuser(res)
       resetForm();
     } catch (error) {
       switch (error.code) {
